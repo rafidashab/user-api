@@ -17,10 +17,10 @@ const mysql = require('mysql');
 // Database Connection for Development
 
 let connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASS
+  host: '35.233.200.179',
+  user: 'rafid',
+  database: 'ass3',
+  password: 'cmpt470'
 });
 
   connection.connect(function(err) {
