@@ -1,54 +1,53 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+const connection = require('./database');
 
 const app = express();
-
-let users = [
-    {
-        id: 1,
-        name: 'Rafid',
-        age: 23
-    },
-    {
-        id: 2,
-        name: 'Leo',
-        age: 21
-    },
-    {
-        id: 3,
-        name: 'Mario',
-        age: 25
-    }
-];
 
 app.use(cors());
 app.use(express.urlencoded( { extended : false} ));
 app.use(express.json());
 
 app.get('/api/users', (req,res) => {
-    res.json(users)
+    connection.query(
+        "SELECT * FROM `Users`",
+            function(error, results, fields) {
+            if (error) throw error;
+            res.json(results);
+        });
 });
 
 app.post('/api/user', (req,res) => {
     let user = req.body;
-    user.id = users.length + 1;
-    users = [...users, user];
-    res.json(user);
+    connection.query(
+        "INSERT INTO `Users` (`name`, `age`) VALUES (?, ?);", [user.name, user.age],
+            function(error, results, fields) {
+            if (error) throw error;
+            let newUser = { "id" : results.insertId, "name" : user.name, "age": user.age };
+            res.json(newUser);
+            });
 })
 
 app.put('/api/user/:id', (req,res) => {
-    const updatedUser = req.body;
-    const index = users.findIndex(user => user.id == req.params.id);
-    users[index].name = updatedUser.name;
-    users[index].age  = updatedUser.age;
-    res.json(updatedUser);
+    const user = req.body;
+    connection.query(
+        "UPDATE `Users` SET `name`=?, `age`=? WHERE id = ?;", [user.name, user.age, req.params.id],
+            function(error, results, fields) {
+            if (error) throw error;
+            let newUser = { "id" : req.params.id, "name" : user.name, "age": user.age };
+            res.json(newUser);
+            });
 })
 
 app.delete('/api/user/:id', (req,res) => {
-    const deletedUser = users.find(user => user.id == req.params.id);
-    console.log(deletedUser)
-    users = users.filter(user => user.id != req.params.id);
-    res.json(deletedUser);
+    connection.query(
+        "DELETE FROM `Users` WHERE id = ?;", [req.params.id],
+            function(error, results, fields) {
+            if (error) throw error;
+            
+            res.json({"id" : req.params.id});
+            });
 })
 
 const port = 5000;
